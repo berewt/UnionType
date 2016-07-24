@@ -31,6 +31,11 @@ retract (MemberThere (MemberThere x)) {e = (There Here)} = Left (MemberThere x)
 retract (MemberThere x) {e = (There (There later))} = either (Left . MemberThere) Right $ retract x {e = There later}
 
 export
+generalize : Union ts -> Union (ts ++ ts')
+generalize (MemberHere x) = MemberHere x
+generalize (MemberThere x) = MemberThere (generalize x)
+
+export
 member : u -> {auto e: Elem u ts} -> Union ts
 member x {e=Here} = MemberHere x
 member x {e=There later} = MemberThere (member x {e=later})
