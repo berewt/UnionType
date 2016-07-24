@@ -40,7 +40,7 @@ of a given type:
 
 ```idris
 alcoholAsBeer : Alcohol -> Maybe Beer
-alcoholAsBeer x = as Beer x
+alcoholAsBeer x = get x
 ```
 
 ## Known Limitation
