@@ -50,6 +50,10 @@ lteIxUnionVectLength [] (MemberThere _) impossible
 lteIxUnionVectLength (t :: xs) (MemberHere _) = LTESucc LTEZero
 lteIxUnionVectLength (x :: xs) (MemberThere later) = LTESucc $ lteIxUnionVectLength xs later
 
+export
+headOrReduce : (u : Union (t::ts)) -> Either (Union ts) t
+headOrReduce (MemberThere x) = Left x
+headOrReduce (MemberHere x) = Right x
 
 export
 unionToValue : Union [l] -> l
