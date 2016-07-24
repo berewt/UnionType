@@ -4,24 +4,29 @@ import Data.Vect
 
 %default total
 
+export
 data Union : Vect n Type -> Type where
   MemberHere : (x:t) -> Union (t::ts)
   MemberThere : Union ts -> Union (t::ts)
 
+export
 member : u -> {auto e: Elem u ts} -> Union ts
 member x {e=Here} = MemberHere x
 member x {e=There later} = MemberThere (member x {e=later})
 
+export
 unionToMaybe : Union ts -> {auto e: Elem t ts} -> Maybe t
 unionToMaybe (MemberHere x)       {e=Here}    = Just x
 unionToMaybe (MemberHere x)       {e=There _} = Nothing
 unionToMaybe (MemberThere x)      {e=Here}    = Nothing
 unionToMaybe (MemberThere later) {e=(There l)} = unionToMaybe later {e=l}
 
+export
 UnionCata : Type -> Vect n Type -> Type
 UnionCata a [] = a
 UnionCata a (x :: xs) = Lazy (x -> a) -> UnionCata a xs
 
+export
 foldUnion : Union ts -> UnionCata a ts
 foldUnion (MemberHere x) = \f => foldUnion' (f x)
   where
