@@ -18,7 +18,6 @@ member : u -> {auto e: Elem u ts} -> Union ts
 member x {e=Here} = MemberHere x
 member x {e=There later} = MemberThere (member x {e=later})
 
-
 export
 unionToMaybe : Union ts -> {auto e: Elem t ts} -> Maybe t
 unionToMaybe (MemberHere x)       {e=Here}    = Just x
@@ -36,19 +35,17 @@ headOrReduce (MemberThere x) = Left x
 headOrReduce (MemberHere x) = Right x
 
 
-public export
-UnionCata : Type -> Vect n Type -> Type
-UnionCata a [] = a
-UnionCata a (x :: xs) = Lazy (x -> a) -> UnionCata a xs
+export
+data UnionMapping : Type -> Type -> Type where
+  Nil : UnionMapping a (Union [])
+  (::) : (t -> a) -> UnionMapping a (Union ts) -> UnionMapping a (Union (t::ts))
 
 export
-foldUnion : Union ts -> UnionCata a ts
-foldUnion (MemberHere x) = \f => foldUnion' (f x)
-  where
-    foldUnion' : {xs : Vect k Type} -> (x : a) -> UnionCata a xs
-    foldUnion' {xs=[]} x = x
-    foldUnion' {xs=_::xs'} x = const $ foldUnion' {xs=xs'} x
-foldUnion (MemberThere later) = const $ foldUnion later
+foldUnion : UnionMapping a (Union ts) -> Union ts -> a
+foldUnion [] (MemberHere _) impossible
+foldUnion [] (MemberThere _) impossible
+foldUnion (f :: _) (MemberHere y) = f y
+foldUnion (f :: xs) (MemberThere y) = foldUnion xs y
 
 export
 unionToValue : Union [l] -> l
