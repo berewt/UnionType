@@ -13,6 +13,23 @@ Uninhabited (Union []) where
     uninhabited (MemberHere _) impossible
     uninhabited (MemberThere _) impossible
 
+public export
+Retract : (t: Type) -> (ts : Vect (S n) Type) -> {auto e: Elem t ts} -> Vect n Type
+Retract _ (y :: xs) {e = Here} = xs
+Retract x (y :: []) {e = (There later)} = absurd later
+Retract x (y :: z :: xs) {e = (There later)} = y :: Retract x (z::xs) {e=later}
+
+
+export
+retract : {ts: Vect (S n) Type} -> Union ts -> {auto e: Elem t ts} -> Either (Union (Retract t ts)) t
+retract (MemberHere x) {e = Here} = Right x
+retract (MemberHere x) {e = (There Here)} = Left (MemberHere x)
+retract (MemberHere x) {e = (There (There later))} = Left (MemberHere x)
+retract (MemberThere x) {e = Here} = Left x
+retract (MemberThere (MemberHere x)) {e = (There Here)} = Right x
+retract (MemberThere (MemberThere x)) {e = (There Here)} = Left (MemberThere x)
+retract (MemberThere x) {e = (There (There later))} = either (Left . MemberThere) Right $ retract x {e = There later}
+
 export
 member : u -> {auto e: Elem u ts} -> Union ts
 member x {e=Here} = MemberHere x
@@ -29,7 +46,6 @@ export
 headOrReduce : (u : Union (t::ts)) -> Either (Union ts) t
 headOrReduce (MemberThere x) = Left x
 headOrReduce (MemberHere x) = Right x
-
 
 public export
 data UnionMapping : Type -> Type -> Type where
