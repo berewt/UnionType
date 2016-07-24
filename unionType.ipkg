@@ -1,0 +1,11 @@
+package unionType
+
+brief = "Build extensible type union of type without introducing specific constructor"
+version = 0.1.0
+
+author = Nicolas Biri <nicolas@biri.name>
+maintainer = Nicolas Biri <nicolas@biri.name>
+
+sourcedir = src
+
+modules = Data.Union
