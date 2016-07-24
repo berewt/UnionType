@@ -42,11 +42,6 @@ get (MemberHere x)       {e=There _} = Nothing
 get (MemberThere x)      {e=Here}    = Nothing
 get (MemberThere later) {e=(There l)} = get later {e=l}
 
-export
-headOrReduce : (u : Union (t::ts)) -> Either (Union ts) t
-headOrReduce (MemberThere x) = Left x
-headOrReduce (MemberHere x) = Right x
-
 public export
 data UnionMapping : Type -> Type -> Type where
   Nil : UnionMapping a (Union [])
