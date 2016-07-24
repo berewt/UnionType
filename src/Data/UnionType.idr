@@ -19,12 +19,17 @@ member : u -> {auto e: Elem u ts} -> Union ts
 member x {e=Here} = MemberHere x
 member x {e=There later} = MemberThere (member x {e=later})
 
+
 export
 unionToMaybe : Union ts -> {auto e: Elem t ts} -> Maybe t
 unionToMaybe (MemberHere x)       {e=Here}    = Just x
 unionToMaybe (MemberHere x)       {e=There _} = Nothing
 unionToMaybe (MemberThere x)      {e=Here}    = Nothing
 unionToMaybe (MemberThere later) {e=(There l)} = unionToMaybe later {e=l}
+
+export
+as : (t: Type) -> Union ts -> {auto e: Elem t ts} -> Maybe t
+as _ x {e=e} = unionToMaybe x {e=e}
 
 export
 UnionCata : Type -> Vect n Type -> Type
