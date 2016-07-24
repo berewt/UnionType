@@ -4,7 +4,7 @@ import Data.Vect
 
 %default total
 
-export
+public export
 data Union : Vect n Type -> Type where
   MemberHere : (x:t) -> Union (t::ts)
   MemberThere : Union ts -> Union (t::ts)
