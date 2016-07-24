@@ -1,8 +1,8 @@
 # UnionType
 
-UnionType was developped with the goal of providing a less verbose alternative to Sum types.
-It has similarities with the Haskell
-`[open-union](https://hackage.haskell.org/package/open-union)` package.
+UnionType was developped with the goal of providing a less verbose alternative
+to Sum types. It has similarities with the Haskell
+[`open-union`](https://hackage.haskell.org/package/open-union) package.
 
 While sum types will lead to stuff like:
 
@@ -35,9 +35,15 @@ Alcohol : Type
 Alcohol = Union [Whiskey, Beer]
 ```
 
-And comes with some helpers like the `as` function that try to extract value of a given type:
+And comes with some helpers like the `as` function that try to extract value
+of a given type:
 
 ```idris
 alcoholAsBeer : Alcohol -> Maybe Beer
 alcoholAsBeer x = as Beer x
 ```
+
+## Known Limitation
+
+`unionType` is clumpsy when the same type is at appears several times in the
+union. A solution is to use newtypes to differentiate them.
