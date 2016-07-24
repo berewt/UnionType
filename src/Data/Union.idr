@@ -9,6 +9,11 @@ data Union : Vect n Type -> Type where
   MemberHere : (x:t) -> Union (t::ts)
   MemberThere : Union ts -> Union (t::ts)
 
+Uninhabited (Union []) where
+    uninhabited (MemberHere _) impossible
+    uninhabited (MemberThere _) impossible
+
+
 export
 member : u -> {auto e: Elem u ts} -> Union ts
 member x {e=Here} = MemberHere x
@@ -44,3 +49,15 @@ lteIxUnionVectLength [] (MemberHere _) impossible
 lteIxUnionVectLength [] (MemberThere _) impossible
 lteIxUnionVectLength (t :: xs) (MemberHere _) = LTESucc LTEZero
 lteIxUnionVectLength (x :: xs) (MemberThere later) = LTESucc $ lteIxUnionVectLength xs later
+
+
+export
+unionToValue : Union [l] -> l
+unionToValue (MemberHere x) = x
+unionToValue (MemberThere x) = absurd x
+
+export
+unionToEither : Union [l, r] -> Either l r
+unionToEither (MemberHere x) = Left x
+unionToEither (MemberThere (MemberHere x)) = Right x
+unionToEither (MemberThere (MemberThere x)) = absurd x
