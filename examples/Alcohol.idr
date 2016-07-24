@@ -38,8 +38,8 @@ Alcohol : Type
 Alcohol = Union [Whiskey, Beer]
 
 alcoholAsBeer : Alcohol -> Maybe Beer
-alcoholAsBeer x = as Beer x
+alcoholAsBeer x = get x
 
 
 foldAlchohol : (Whiskey -> a) -> (Beer -> a) -> Alcohol -> a
-foldAlchohol w b a = foldUnion a w b
+foldAlchohol w b = foldUnion [w, b]

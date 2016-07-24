@@ -19,15 +19,11 @@ member x {e=Here} = MemberHere x
 member x {e=There later} = MemberThere (member x {e=later})
 
 export
-unionToMaybe : Union ts -> {auto e: Elem t ts} -> Maybe t
-unionToMaybe (MemberHere x)       {e=Here}    = Just x
-unionToMaybe (MemberHere x)       {e=There _} = Nothing
-unionToMaybe (MemberThere x)      {e=Here}    = Nothing
-unionToMaybe (MemberThere later) {e=(There l)} = unionToMaybe later {e=l}
-
-export
-as : t -> Union ts -> {auto e: Elem t ts} -> Maybe t
-as _ x {e=e} = unionToMaybe x {e=e}
+get : Union ts -> {auto e: Elem t ts} -> Maybe t
+get (MemberHere x)       {e=Here}    = Just x
+get (MemberHere x)       {e=There _} = Nothing
+get (MemberThere x)      {e=Here}    = Nothing
+get (MemberThere later) {e=(There l)} = get later {e=l}
 
 export
 headOrReduce : (u : Union (t::ts)) -> Either (Union ts) t
@@ -35,7 +31,7 @@ headOrReduce (MemberThere x) = Left x
 headOrReduce (MemberHere x) = Right x
 
 
-export
+public export
 data UnionMapping : Type -> Type -> Type where
   Nil : UnionMapping a (Union [])
   (::) : (t -> a) -> UnionMapping a (Union ts) -> UnionMapping a (Union (t::ts))
