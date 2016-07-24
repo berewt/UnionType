@@ -8,4 +8,4 @@ maintainer = Nicolas Biri <nicolas@biri.name>
 
 sourcedir = src
 
-modules = Data.Union
+modules = Data.UnionType
