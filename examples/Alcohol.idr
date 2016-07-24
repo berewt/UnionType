@@ -26,6 +26,10 @@ standardAlcoholAsBeer: StandardAlcohol -> Maybe Beer
 standardAlcoholAsBeer (AlcoholWhiskey _) = Nothing
 standardAlcoholAsBeer (AlcoholBeer x) = Just x
 
+foldStandardAlcohol : (Whiskey -> a) -> (Beer -> a) -> StandardAlcohol -> a
+foldStandardAlcohol f _ (AlcoholWhiskey x) = f x
+foldStandardAlcohol _ g (AlcoholBeer x) = g x
+
 -------------
 -- With Union
 -------------
@@ -36,3 +40,6 @@ Alcohol = Union [Whiskey, Beer]
 alcoholAsBeer : Alcohol -> Maybe Beer
 alcoholAsBeer x = as Beer x
 
+
+foldAlchohol : (Whiskey -> a) -> (Beer -> a) -> Alcohol -> a
+foldAlchohol w b a = foldUnion a w b
