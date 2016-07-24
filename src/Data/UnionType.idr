@@ -31,7 +31,7 @@ export
 as : (t: Type) -> Union ts -> {auto e: Elem t ts} -> Maybe t
 as _ x {e=e} = unionToMaybe x {e=e}
 
-export
+public export
 UnionCata : Type -> Vect n Type -> Type
 UnionCata a [] = a
 UnionCata a (x :: xs) = Lazy (x -> a) -> UnionCata a xs
