@@ -2,7 +2,7 @@
 ||| and that can be extended dynamically, whithout compromising type safety.
 module Data.UnionType
 
-import Data.List
+import public Data.List
 
 %default total
 %access export
