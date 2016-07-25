@@ -14,6 +14,19 @@ Uninhabited (Union []) where
     uninhabited (MemberThere _) impossible
 
 public export
+data Sub : Vect n Type -> Vect k Type -> Type where
+  SubZ : Sub [] ys
+  SubK : Sub xs ys ->  Elem t ys -> Sub (t::xs) ys
+
+subPreserveElem :  Sub xs ys -> Elem t xs -> Elem t ys
+subPreserveElem SubZ Here impossible
+subPreserveElem SubZ (There _) impossible
+subPreserveElem (SubK x Here) Here = Here
+subPreserveElem (SubK x Here) (There later) = subPreserveElem x later
+subPreserveElem (SubK x (There later)) Here = There later
+subPreserveElem (SubK x (There y)) (There later) = subPreserveElem x later
+
+public export
 Retract : (t: Type) -> (ts : Vect (S n) Type) -> {auto e: Elem t ts} -> Vect n Type
 Retract _ (y :: xs) {e = Here} = xs
 Retract x (y :: []) {e = (There later)} = absurd later
@@ -31,14 +44,14 @@ retract (MemberThere (MemberThere x)) {e = (There Here)} = Left (MemberThere x)
 retract (MemberThere x) {e = (There (There later))} = either (Left . MemberThere) Right $ retract x {e = There later}
 
 export
-generalize : Union ts -> Union (ts ++ ts')
-generalize (MemberHere x) = MemberHere x
-generalize (MemberThere x) = MemberThere (generalize x)
-
-export
 member : u -> {auto e: Elem u ts} -> Union ts
 member x {e=Here} = MemberHere x
 member x {e=There later} = MemberThere (member x {e=later})
+
+export
+generalize : Union ts -> {auto s: Sub ts ts'} -> Union ts'
+generalize (MemberHere x) {s=s} = member x {e=subPreserveElem s Here}
+generalize (MemberThere x) {s = (SubK y z)} = generalize x {s=y}
 
 export
 get : Union ts -> {auto e: Elem t ts} -> Maybe t
@@ -59,10 +72,9 @@ foldUnion [] (MemberThere _) impossible
 foldUnion (f :: _) (MemberHere y) = f y
 foldUnion (f :: xs) (MemberThere y) = foldUnion xs y
 
-export
-unionToValue : Union [l] -> l
-unionToValue (MemberHere x) = x
-unionToValue (MemberThere x) = absurd x
+Cast (Union [l]) l where
+  cast (MemberHere x) = x
+  cast (MemberThere x) = absurd x
 
 export
 unionToEither : Union [l, r] -> Either l r
