@@ -26,14 +26,16 @@ Uninhabited (Union []) where
     uninhabited (MemberThere _) impossible
 
 ||| A partial order relation between unions
-||| (totally fucked up if one of the List contains several times the same Type)
+||| Type occurences are not taken into account
+||| (ie.: Sub (Union [Nat, Nat]) (Union [Nat]) is inhabited)
 ||| Sub xs ys is inhabited if each type of xs is in ys.
 public export
 data Sub : List Type -> List Type -> Type where
   SubZ : Sub [] ys
   SubK : Sub xs ys ->  Elem t ys -> Sub (t::xs) ys
 
-||| Remove a type of an Union (if there are several element in the union, remove its first occurence)
+||| Remove a type of an Union.
+||| If there are several element in the union, remove only its first occurence.
 ||| @ ty The type to remove from the Union
 ||| @ ts The Union
 public export
@@ -75,10 +77,17 @@ Cast (Union [l]) l where
   cast (MemberHere x) = x
   cast (MemberThere x) = absurd x
 
+Cast l (Union [l]) where
+  cast x = (MemberHere x)
+
 Cast (Union [l, r]) (Either l r) where
   cast (MemberHere x) = Left x
   cast (MemberThere (MemberHere x)) = Right x
   cast (MemberThere (MemberThere x)) = absurd x
+
+Cast (Either l r) (Union [l, r]) where
+  cast (Left x) = (MemberHere x)
+  cast (Right x) = (MemberThere (MemberHere x))
 
 ||| Remove a type from the union
 retract : {ts: List Type} -> Union ts -> {auto ne : NonEmpty ts} -> {auto e: Elem t ts} -> Either (Union (Retract t ts)) t
