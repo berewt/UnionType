@@ -1,4 +1,4 @@
-package unionType
+package union-type
 
 brief = "Build extensible type union of type without introducing specific constructor"
 version = 0.1.0
