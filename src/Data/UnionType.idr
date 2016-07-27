@@ -39,10 +39,18 @@ data Sub : List Type -> List Type -> Type where
 ||| @ ty The type to remove from the Union
 ||| @ ts The Union
 public export
-Retract : (ty: Type) -> (ts : List Type) -> {auto ne : NonEmpty ts} -> {auto p: Elem ty ts} -> List Type
+Retract : (ty: Type) -> (ts : List Type) -> {auto p: Elem ty ts} -> List Type
 Retract _ (y :: ts) {p = Here} = ts
 Retract ty (y :: []) {p = (There later)} = absurd later
 Retract ty (y :: z :: ts) {p = (There later)} = y :: Retract ty (z::ts) {p = later}
+
+public export
+Update : (oldTy: Type) -> (newTy: Type) -> (xs : List Type) -> {auto p: Elem oldTy xs} -> List Type
+Update _ _ [] {p = p} = absurd p
+Update _ newTy (x :: xs) {p = Here} = newTy :: xs
+Update _ _ (x :: []) {p = There later} = absurd later
+Update oldTy newTy (x :: y :: xs) {p = There later} = x :: Update oldTy newTy (y :: xs)
+
 
 ||| A type that is provided when we want to fold an Union.
 ||| @ target The type produced by the fold
@@ -72,6 +80,14 @@ foldUnion [] (MemberHere _) impossible
 foldUnion [] (MemberThere _) impossible
 foldUnion (f :: _) (MemberHere y) = f y
 foldUnion (f :: xs) (MemberThere y) = foldUnion xs y
+
+update : (a -> b) -> Union ts -> {auto p: Elem a ts} -> Union (Update a b ts)
+update f (MemberHere x) {p = Here} = MemberHere (f x)
+update _ (MemberHere x) {p = There Here} = MemberHere x
+update _ (MemberHere x) {p = There (There later)}= MemberHere x
+update _ (MemberThere x) {p = Here} = MemberThere x
+update f (MemberThere x) {p = There Here} = MemberThere $ update f x
+update f (MemberThere x) {p = There (There later)} = MemberThere $ update f x {p = There later}
 
 Cast (Union [ty]) ty where
   cast (MemberHere x) = x
