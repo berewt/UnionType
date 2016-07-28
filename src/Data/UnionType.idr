@@ -57,7 +57,7 @@ member x {p = There later} = MemberThere (member x {p = later})
 
 
 ||| Try to extract a given type from the union.
-||| Note that if the union contains several time the same type, and 
+||| Note that if the union contains several time the same type, and
 ||| you do not provide explicitly the Elem proof,
 ||| it may fails to retrieve the value, even if it is present.
 ||| For example:
@@ -84,7 +84,7 @@ foldUnion (f :: xs) (MemberThere y) = foldUnion xs y
 update : (a -> b) -> Union ts -> {auto p: Elem a ts} -> Union (Update a b ts)
 update f (MemberHere x) {p = Here} = MemberHere (f x)
 update _ (MemberHere x) {p = There Here} = MemberHere x
-update _ (MemberHere x) {p = There (There later)}= MemberHere x
+update _ (MemberHere x) {p = There (There later)} = MemberHere x
 update _ (MemberThere x) {p = Here} = MemberThere x
 update f (MemberThere x) {p = There Here} = MemberThere $ update f x
 update f (MemberThere x) {p = There (There later)} = MemberThere $ update f x {p = There later}
@@ -106,14 +106,11 @@ Cast (Either l r) (Union [l, r]) where
   cast (Right x) = (MemberThere (MemberHere x))
 
 ||| Remove a type from the union
-retract : {xs: List Type} -> Union xs -> {auto p: Elem ty xs} -> Either (Union (dropElem xs p)) ty
+retract : Union xs -> {auto p: Elem ty xs} -> Either (Union (dropElem xs p)) ty
 retract (MemberHere x) {p = Here} = Right x
-retract (MemberHere x) {p = (There Here)} = Left (MemberHere x)
-retract (MemberHere x) {p = (There (There later))} = Left (MemberHere x)
+retract (MemberHere x) {p = (There _)} = Left (MemberHere x)
 retract (MemberThere x) {p = Here} = Left x
-retract (MemberThere (MemberHere x)) {p = (There Here)} = Right x
-retract (MemberThere (MemberThere x)) {p = (There Here)} = Left (MemberThere x)
-retract (MemberThere x) {p = (There (There later))} = either (Left . MemberThere) Right $ retract x {p = There later}
+retract (MemberThere x) {p = (There later)} = either (Left . MemberThere) Right $ retract x {p = later}
 
 private
 subPreserveElem : Sub xs ys -> Elem ty xs -> Elem ty ys
