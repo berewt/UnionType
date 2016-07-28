@@ -30,7 +30,7 @@ Uninhabited (Union []) where
 ||| (ie.: Sub (Union [Nat, Nat]) (Union [Nat]) is inhabited)
 ||| Sub xs ys is inhabited if each type of xs is in ys.
 public export
-data Sub : List Type -> List Type -> Type where
+data Sub : List a -> List a -> Type where
   SubZ : Sub [] ys
   SubK : Sub xs ys ->  Elem ty ys -> Sub (ty::xs) ys
 
@@ -112,15 +112,6 @@ retract (MemberHere x) {p = (There _)} = Left (MemberHere x)
 retract (MemberThere x) {p = Here} = Left x
 retract (MemberThere x) {p = (There later)} = either (Left . MemberThere) Right $ retract x {p = later}
 
-private
-subPreserveElem : Sub xs ys -> Elem ty xs -> Elem ty ys
-subPreserveElem SubZ Here impossible
-subPreserveElem SubZ (There _) impossible
-subPreserveElem (SubK x Here) Here = Here
-subPreserveElem (SubK x Here) (There later) = subPreserveElem x later
-subPreserveElem (SubK x (There later)) Here = There later
-subPreserveElem (SubK x (There y)) (There later) = subPreserveElem x later
-
 ||| Replace an Union with a larger Union.
 ||| The order of the elements in the targeted union doesn't need
 ||| to be the same than the one in the source union.
@@ -131,9 +122,11 @@ subPreserveElem (SubK x (There y)) (There later) = subPreserveElem x later
 ||| @ s A prrof that each type of u is in the result,
 |||     used to map the value of the union.
 generalize : (u: Union xs) -> {auto s: Sub xs ys} -> Union ys
-generalize (MemberHere x) {s = s} = member x {p = subPreserveElem s Here}
+generalize (MemberHere x) {s = (SubK y z)} = member x {p = z}
 generalize (MemberThere x) {s = (SubK y z)} = generalize x {s=y}
 
+generalise : (u: Union xs) -> {auto s: Sub xs ys} -> Union ys
+generalise = generalize
 
 Eq (Union []) where
   (==) x _ = absurd x
