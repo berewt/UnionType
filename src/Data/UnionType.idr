@@ -34,23 +34,12 @@ data Sub : List Type -> List Type -> Type where
   SubZ : Sub [] ys
   SubK : Sub xs ys ->  Elem ty ys -> Sub (ty::xs) ys
 
-||| Remove a type of an Union.
-||| If there are several element in the union, remove only its first occurence.
-||| @ ty The type to remove from the Union
-||| @ ts The Union
-public export
-Retract : (ty: Type) -> (ts : List Type) -> {auto p: Elem ty ts} -> List Type
-Retract _ (y :: ts) {p = Here} = ts
-Retract ty (y :: []) {p = (There later)} = absurd later
-Retract ty (y :: z :: ts) {p = (There later)} = y :: Retract ty (z::ts) {p = later}
-
 public export
 Update : (oldTy: Type) -> (newTy: Type) -> (xs : List Type) -> {auto p: Elem oldTy xs} -> List Type
 Update _ _ [] {p = p} = absurd p
 Update _ newTy (x :: xs) {p = Here} = newTy :: xs
 Update _ _ (x :: []) {p = There later} = absurd later
 Update oldTy newTy (x :: y :: xs) {p = There later} = x :: Update oldTy newTy (y :: xs)
-
 
 ||| A type that is provided when we want to fold an Union.
 ||| @ target The type produced by the fold
@@ -61,12 +50,22 @@ data UnionFold : (target: Type) -> (union: Type) -> Type where
   (::) : (ty -> a) -> UnionFold a (Union ts) -> UnionFold a (Union (ty::ts))
 
 ||| Create an Union instance from one of the Union value.
+||| In presence of type ambiguity
 member : u -> {auto p: Elem u ts} -> Union ts
 member x {p = Here} = MemberHere x
 member x {p = There later} = MemberThere (member x {p = later})
 
 
 ||| Try to extract a given type from the union.
+||| Note that if the union contains several time the same type, and 
+||| you do not provide explicitly the Elem proof,
+||| it may fails to retrieve the value, even if it is present.
+||| For example:
+||| >>> :let x = the (Union [Nat, Nat]) (MemberThere (MemberHere 42))
+||| >>> the (Maybe Nat) $ get x
+||| Nothing : Maybe Nat
+||| >>> the (Maybe Nat) $ get x {p = There Here}
+||| Just 42 : Maybe Nat
 get : Union ts -> {auto p: Elem ty ts} -> Maybe ty
 get (MemberHere x)      {p = Here}      = Just x
 get (MemberHere x)      {p = There _}   = Nothing
@@ -81,6 +80,7 @@ foldUnion [] (MemberThere _) impossible
 foldUnion (f :: _) (MemberHere y) = f y
 foldUnion (f :: xs) (MemberThere y) = foldUnion xs y
 
+||| Update a type of the union
 update : (a -> b) -> Union ts -> {auto p: Elem a ts} -> Union (Update a b ts)
 update f (MemberHere x) {p = Here} = MemberHere (f x)
 update _ (MemberHere x) {p = There Here} = MemberHere x
@@ -106,7 +106,7 @@ Cast (Either l r) (Union [l, r]) where
   cast (Right x) = (MemberThere (MemberHere x))
 
 ||| Remove a type from the union
-retract : {xs: List Type} -> Union xs -> {auto ne : NonEmpty xs} -> {auto p: Elem ty xs} -> Either (Union (Retract ty xs)) ty
+retract : {xs: List Type} -> Union xs -> {auto p: Elem ty xs} -> Either (Union (dropElem xs p)) ty
 retract (MemberHere x) {p = Here} = Right x
 retract (MemberHere x) {p = (There Here)} = Left (MemberHere x)
 retract (MemberHere x) {p = (There (There later))} = Left (MemberHere x)
@@ -125,10 +125,16 @@ subPreserveElem (SubK x (There later)) Here = There later
 subPreserveElem (SubK x (There y)) (There later) = subPreserveElem x later
 
 ||| Replace an Union with a larger Union.
-||| The order of the elemnt in the targeted union doesn't need
+||| The order of the elements in the targeted union doesn't need
 ||| to be the same than the one in the source union.
-generalize : Union xs -> {auto s: Sub xs ys} -> Union ys
-generalize (MemberHere x) {s = s} = member x {p=subPreserveElem s Here}
+||| If some types appears several time in the source or the target union
+||| the mapping between source and target types is ensures by the implicit
+||| Sub parameter.
+||| @ u The union to generalize
+||| @ s A prrof that each type of u is in the result,
+|||     used to map the value of the union.
+generalize : (u: Union xs) -> {auto s: Sub xs ys} -> Union ys
+generalize (MemberHere x) {s = s} = member x {p = subPreserveElem s Here}
 generalize (MemberThere x) {s = (SubK y z)} = generalize x {s=y}
 
 
