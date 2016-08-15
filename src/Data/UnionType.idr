@@ -2,6 +2,7 @@
 ||| and that can be extended dynamically, whithout compromising type safety.
 module Data.UnionType
 
+import Control.Isomorphism
 import public Data.List
 
 %default total
@@ -98,8 +99,15 @@ Cast (Union [ty]) ty where
   cast (MemberHere x) = x
   cast (MemberThere x) = absurd x
 
-Cast l (Union [l]) where
+Cast ty (Union [ty]) where
   cast x = (MemberHere x)
+
+oneTypeUnion : Iso (Union [ty]) ty
+oneTypeUnion = MkIso cast cast from to
+  where
+    from _ = Refl
+    to (MemberHere _) = Refl
+    to (MemberThere x) = absurd x
 
 Cast (Union [l, r]) (Either l r) where
   cast (MemberHere x) = Left x
@@ -109,6 +117,16 @@ Cast (Union [l, r]) (Either l r) where
 Cast (Either l r) (Union [l, r]) where
   cast (Left x) = (MemberHere x)
   cast (Right x) = (MemberThere (MemberHere x))
+
+eitherUnion : Iso (Union [l, r]) (Either l r)
+eitherUnion = MkIso cast cast from to
+  where
+    from (Left _) = Refl
+    from (Right _) = Refl
+    to (MemberHere _) = Refl
+    to (MemberThere (MemberHere _)) = Refl
+    to (MemberThere (MemberThere x)) = absurd x
+
 
 ||| Remove a type from the union
 retract : Union xs -> {auto p : Elem ty xs} -> Either (Union (dropElem xs p)) ty

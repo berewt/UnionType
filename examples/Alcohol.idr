@@ -11,7 +11,10 @@ record Beer where
   constructor MkBeer
   type: String
 
--- This is Hwat we want to avoid
+--------------------------------
+-- This is what we want to avoid
+--------------------------------
+
 data StandardAlcohol
   = AlcoholWhiskey Whiskey
   | AlcoholBeer Beer
@@ -43,3 +46,19 @@ alcoholAsBeer x = get x
 
 foldAlchohol : (Whiskey -> a) -> (Beer -> a) -> Alcohol -> a
 foldAlchohol w b = foldUnion [w, b]
+
+-- Going Further
+
+data Sake = MkSake String
+
+MoreAlcohol : Type
+MoreAlcohol = Union [Whiskey, Beer, Sake]
+
+moreAlcohol : Alcohol -> MoreAlcohol
+moreAlcohol x = generalize x -- eta reduction does not work
+
+eitherAlcohol : Alcohol -> Either Whiskey Beer
+eitherAlcohol = cast
+
+backToAlcohol : MoreAlcohol -> Either Alcohol Sake 
+backToAlcohol x = retract x -- eta reduction does not work

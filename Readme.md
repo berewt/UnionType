@@ -35,7 +35,7 @@ Alcohol : Type
 Alcohol = Union [Whiskey, Beer]
 ```
 
-And comes with some helpers like the `as` function that try to extract value
+And comes with some helpers like the `get` function that try to extract value
 of a given type:
 
 ```idris
