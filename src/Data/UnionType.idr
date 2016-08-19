@@ -200,3 +200,27 @@ Eq (Union []) where
   (/=) (MemberHere x) (MemberThere y) = True
   (/=) (MemberThere x) (MemberHere y) = True
   (/=) (MemberThere x) (MemberThere y) = x /= y
+
+
+DecEq (Union []) where
+    decEq (MemberHere _) _ impossible
+    decEq (MemberThere _) _ impossible
+
+promoteDecEqToMemberHere : (contra : (x = y) -> Void) -> (MemberHere x = MemberHere y) -> Void
+promoteDecEqToMemberHere contra Refl = contra Refl
+
+hereIsNotThere : (MemberHere x = MemberThere y) -> Void
+hereIsNotThere Refl impossible
+
+recDecEqUnion : (contra : (xs = ys) -> Void) -> (MemberThere xs = MemberThere ys) -> Void
+recDecEqUnion contra Refl = contra Refl
+
+(DecEq ty, DecEq (Union xs)) => DecEq (Union (ty::xs)) where
+     decEq (MemberHere x) (MemberHere y) with (decEq x y)
+       decEq (MemberHere y) (MemberHere y) | (Yes Refl) = Yes Refl
+       decEq (MemberHere x) (MemberHere y) | (No contra) = No (promoteDecEqToMemberHere contra)
+     decEq (MemberHere x) (MemberThere y) = No hereIsNotThere
+     decEq (MemberThere x) (MemberHere y) = No (negEqSym hereIsNotThere)
+     decEq (MemberThere xs) (MemberThere ys) with (decEq xs ys)
+       decEq (MemberThere ys) (MemberThere ys) | (Yes Refl) = Yes Refl
+       decEq (MemberThere xs) (MemberThere ys) | (No contra) = No (recDecEqUnion contra)
