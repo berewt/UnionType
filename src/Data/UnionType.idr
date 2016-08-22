@@ -31,8 +31,7 @@ Uninhabited (Union []) where
 ||| In presence of type ambiguity
 member : u -> {auto p: Elem u ts} -> Union ts
 member x {p = Here} = MemberHere x
-member x {p = There p} = MemberThere (member x {p})
-
+member x {p = There _} = MemberThere $ member x
 
 ||| A type that is provided when we want to fold an Union.
 ||| @ target The type produced by the fold
@@ -54,17 +53,17 @@ data UnionFold : (target : Type) -> (union : Type) -> Type where
 ||| >>> the (Maybe Nat) $ get x {p = There Here}
 ||| Just 42 : Maybe Nat
 get : Union ts -> {auto p : Elem ty ts} -> Maybe ty
-get (MemberHere x)      {p = Here}      = Just x
-get (MemberHere _)      {p = There _}   = Nothing
-get (MemberThere _)     {p = Here}      = Nothing
-get (MemberThere later) {p = (There p)} = get later {p}
+get (MemberHere x)      {p = Here}    = Just x
+get (MemberHere _)      {p = There _} = Nothing
+get (MemberThere _)     {p = Here}    = Nothing
+get (MemberThere later) {p = There _} = get later
 
 getHereMemberIsJust : (x : a) -> get (member x) = Just x
 getHereMemberIsJust _ = Refl
 
 getMemberWithElemIsJust : (x : a) ->
                     (p : Elem a xs) ->
-                    the (Maybe a) (get (member x {p}) {p}) = Just x
+                    the (Maybe a) (get (member x)) = Just x
 getMemberWithElemIsJust _ Here = Refl
 getMemberWithElemIsJust x (There later) = getMemberWithElemIsJust x later
 
@@ -93,7 +92,7 @@ update _ (MemberHere x) {p = There Here} = MemberHere x
 update _ (MemberHere x) {p = There (There _)} = MemberHere x
 update _ (MemberThere x) {p = Here} = MemberThere x
 update f (MemberThere x) {p = There Here} = MemberThere $ update f x
-update f (MemberThere x) {p = There (There later)} = MemberThere $ update f x {p = There later}
+update f (MemberThere x) {p = There (There _)} = MemberThere $ update f x
 
 Cast (Union [ty]) ty where
   cast (MemberHere x) = x
@@ -133,14 +132,14 @@ retract : Union xs -> {auto p : Elem ty xs} -> Either (Union (dropElem xs p)) ty
 retract (MemberHere x) {p = Here} = Right x
 retract (MemberHere x) {p = (There _)} = Left (MemberHere x)
 retract (MemberThere x) {p = Here} = Left x
-retract (MemberThere x) {p = (There later)} = either (Left . MemberThere) Right $ retract x {p = later}
+retract (MemberThere x) {p = (There _)} = either (Left . MemberThere) Right $ retract x
 
 retractHereMemberIsRight : (x : a) -> retract (member x) = Right x
 retractHereMemberIsRight _ = Refl
 
 retractMemberWithElemIsRight : (x : a) ->
                                (p : Elem a xs) ->
-                               the (Either _ a) (retract (member x {p}) {p}) = Right x
+                               the (Either _ a) (retract (member x)) = Right x
 retractMemberWithElemIsRight _ Here = Refl
 retractMemberWithElemIsRight x (There p) =
   cong (retractMemberWithElemIsRight x p) {f = (either (Left . MemberThere) Right)}
@@ -153,12 +152,12 @@ getRetractRelationshipLemma (Right r) = Refl
 
 getRetractRelationship : (x : Union xs) ->
                          (p : Elem a xs) ->
-                         get x {p} = either (const Nothing) Just (retract x {p})
+                         get x = either (const Nothing) Just (retract x)
 getRetractRelationship (MemberHere _) Here = Refl
 getRetractRelationship (MemberThere _) Here = Refl
 getRetractRelationship (MemberHere _) (There _) = Refl
 getRetractRelationship (MemberThere x) (There later) =
-  rewrite getRetractRelationship x later in getRetractRelationshipLemma (retract x {p = later})
+  rewrite getRetractRelationship x later in getRetractRelationshipLemma (retract x)
 
 
 ||| A partial order relation between unions
@@ -168,7 +167,7 @@ getRetractRelationship (MemberThere x) (There later) =
 public export
 data Sub : List a -> List a -> Type where
   SubZ : Sub [] ys
-  SubK : Sub xs ys ->  Elem ty ys -> Sub (ty::xs) ys
+  SubK : Sub xs ys -> Elem ty ys -> Sub (ty::xs) ys
 
 ||| Replace an Union with a larger Union.
 ||| The order of the elements in the targeted union doesn't need
@@ -180,8 +179,8 @@ data Sub : List a -> List a -> Type where
 ||| @ s A prrof that each type of u is in the result,
 |||     used to map the value of the union.
 generalize : (u: Union xs) -> {auto s: Sub xs ys} -> Union ys
-generalize (MemberHere x) {s = (SubK _ p)} = member x {p}
-generalize (MemberThere x) {s = (SubK s _)} = generalize x {s}
+generalize (MemberHere x) {s = (SubK _ p)} = member x
+generalize (MemberThere x) {s = (SubK s _)} = generalize x
 
 ||| English version of generalize
 generalise : (u: Union xs) -> {auto s: Sub xs ys} -> Union ys
@@ -216,11 +215,13 @@ recDecEqUnion : (contra : (xs = ys) -> Void) -> (MemberThere xs = MemberThere ys
 recDecEqUnion contra Refl = contra Refl
 
 (DecEq ty, DecEq (Union xs)) => DecEq (Union (ty::xs)) where
-     decEq (MemberHere x) (MemberHere y) with (decEq x y)
-       decEq (MemberHere y) (MemberHere y) | (Yes Refl) = Yes Refl
-       decEq (MemberHere x) (MemberHere y) | (No contra) = No (promoteDecEqToMemberHere contra)
      decEq (MemberHere x) (MemberThere y) = No hereIsNotThere
-     decEq (MemberThere x) (MemberHere y) = No (negEqSym hereIsNotThere)
-     decEq (MemberThere xs) (MemberThere ys) with (decEq xs ys)
-       decEq (MemberThere ys) (MemberThere ys) | (Yes Refl) = Yes Refl
-       decEq (MemberThere xs) (MemberThere ys) | (No contra) = No (recDecEqUnion contra)
+     decEq (MemberThere x) (MemberHere y) = No $ negEqSym hereIsNotThere
+     decEq (MemberHere x) (MemberHere y)
+           = case (decEq x y) of
+                  Yes Refl => Yes Refl
+                  No contra => No $ promoteDecEqToMemberHere contra
+     decEq (MemberThere xs) (MemberThere ys)
+           = case (decEq xs ys) of
+                  Yes Refl => Yes Refl
+                  No contra => No $ recDecEqUnion contra
