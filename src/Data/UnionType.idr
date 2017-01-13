@@ -58,9 +58,11 @@ get (MemberHere _)      {p = There _} = Nothing
 get (MemberThere _)     {p = Here}    = Nothing
 get (MemberThere later) {p = There _} = get later
 
+||| Proof: Get after member get the value back
 getHereMemberIsJust : (x : a) -> get (member x) = Just x
 getHereMemberIsJust _ = Refl
 
+||| Proof: We can get back a member of an union if we know where to look
 getMemberWithElemIsJust : (x : a) ->
                     (p : Elem a xs) ->
                     the (Maybe a) (get (member x)) = Just x
@@ -74,7 +76,7 @@ foldUnion [] x = absurd x
 foldUnion (f :: _) (MemberHere y) = f y
 foldUnion (_ :: xs) (MemberThere y) = foldUnion xs y
 
-
+||| Replace a type by another in a list of type
 public export
 Update : (newTy : Type) -> (xs : List Type) -> (p : Elem oldTy xs) -> List Type
 Update _ [] p = absurd p
@@ -101,6 +103,7 @@ Cast (Union [ty]) ty where
 Cast ty (Union [ty]) where
   cast x = (MemberHere x)
 
+||| A union of one type is isomorphic to this type
 oneTypeUnion : Iso (Union [ty]) ty
 oneTypeUnion = MkIso cast cast from to
   where
@@ -117,6 +120,7 @@ Cast (Either l r) (Union [l, r]) where
   cast (Left x) = (MemberHere x)
   cast (Right x) = (MemberThere (MemberHere x))
 
+||| A union of two types is isomorphic to Either
 eitherUnion : Iso (Union [l, r]) (Either l r)
 eitherUnion = MkIso cast cast from to
   where
@@ -127,16 +131,19 @@ eitherUnion = MkIso cast cast from to
     to (MemberThere (MemberThere x)) = absurd x
 
 
-||| Remove a type from the union
+||| Remove a type from the union, returns either the contained value or the retracted union.
 retract : Union xs -> {auto p : Elem ty xs} -> Either (Union (dropElem xs p)) ty
 retract (MemberHere x) {p = Here} = Right x
 retract (MemberHere x) {p = (There _)} = Left (MemberHere x)
 retract (MemberThere x) {p = Here} = Left x
 retract (MemberThere x) {p = (There _)} = either (Left . MemberThere) Right $ retract x
 
+
+||| Proof: Retract the current value type returns this value
 retractHereMemberIsRight : (x : a) -> retract (member x) = Right x
 retractHereMemberIsRight _ = Refl
 
+||| Proof: Retract the current value type returns this value
 retractMemberWithElemIsRight : (x : a) ->
                                (p : Elem a xs) ->
                                the (Either _ a) (retract (member x)) = Right x
@@ -150,6 +157,7 @@ getRetractRelationshipLemma : (x : Either (Union xs) a) ->
 getRetractRelationshipLemma (Left l) = Refl
 getRetractRelationshipLemma (Right r) = Refl
 
+||| Proof : we can map get and retract
 getRetractRelationship : (x : Union xs) ->
                          (p : Elem a xs) ->
                          get x = either (const Nothing) Just (retract x)
@@ -205,12 +213,15 @@ DecEq (Union []) where
     decEq (MemberHere _) _ impossible
     decEq (MemberThere _) _ impossible
 
+private
 promoteDecEqToMemberHere : (contra : (x = y) -> Void) -> (MemberHere x = MemberHere y) -> Void
 promoteDecEqToMemberHere contra Refl = contra Refl
 
+private
 hereIsNotThere : (MemberHere x = MemberThere y) -> Void
 hereIsNotThere Refl impossible
 
+private
 recDecEqUnion : (contra : (xs = ys) -> Void) -> (MemberThere xs = MemberThere ys) -> Void
 recDecEqUnion contra Refl = contra Refl
 
