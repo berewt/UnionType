@@ -1,10 +1,14 @@
 package union_type
 
 brief = "Build extensible type union of type without introducing specific constructor"
-version = 0.1.0
+readme = Readme.md
+version = 0.2.0
 
 author = Nicolas Biri <nicolas@biri.name>
 maintainer = Nicolas Biri <nicolas@biri.name>
+
+sourceloc = https://github.com/berewt/UnionType
+bugtracker = https://github.com/berewt/UnionType/issues
 
 sourcedir = src
 
