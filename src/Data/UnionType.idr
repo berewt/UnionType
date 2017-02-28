@@ -96,6 +96,19 @@ update _ (MemberThere x) {p = Here} = MemberThere x
 update f (MemberThere x) {p = There Here} = MemberThere $ update f x
 update f (MemberThere x) {p = There (There _)} = MemberThere $ update f x
 
+Cast (Union []) Void where
+  cast x = absurd x
+
+Cast Void (Union []) where
+  cast x = absurd x
+
+||| A union of one type is isomorphic to this type
+zeroTypeUnion : Iso (Union []) Void
+zeroTypeUnion = MkIso cast cast from to
+  where
+    from x = absurd x
+    to x = absurd x
+
 Cast (Union [ty]) ty where
   cast (MemberHere x) = x
   cast (MemberThere x) = absurd x
@@ -121,8 +134,8 @@ Cast (Either l r) (Union [l, r]) where
   cast (Right x) = (MemberThere (MemberHere x))
 
 ||| A union of two types is isomorphic to Either
-eitherUnion : Iso (Union [l, r]) (Either l r)
-eitherUnion = MkIso cast cast from to
+twoTypesUnion : Iso (Union [l, r]) (Either l r)
+twoTypesUnion = MkIso cast cast from to
   where
     from (Left _) = Refl
     from (Right _) = Refl
@@ -130,6 +143,22 @@ eitherUnion = MkIso cast cast from to
     to (MemberThere (MemberHere _)) = Refl
     to (MemberThere (MemberThere x)) = absurd x
 
+Cast (Union (l::rs)) (Either l (Union rs)) where
+  cast (MemberHere x) = Left x
+  cast (MemberThere x) = Right x
+
+Cast (Either l (Union rs)) (Union (l::rs)) where
+  cast (Left x) = MemberHere x
+  cast (Right x) = MemberThere x
+
+||| We can decompose Union with Either
+eitherUnion : Iso (Union (x::xs)) (Either x (Union xs))
+eitherUnion = MkIso cast cast from to
+ where
+   from (Left l) = Refl
+   from (Right r) = Refl
+   to (MemberHere x) = Refl
+   to (MemberThere x) = Refl
 
 ||| Remove a type from the union, returns either the contained value or the retracted union.
 retract : Union xs -> {auto p : Elem ty xs} -> Either (Union (dropElem xs p)) ty
