@@ -122,24 +122,22 @@ namespace union
       to (MemberHere _) = Refl
       to (MemberThere x) = absurd x
 
-  Cast (Union [l, r]) (Either l r) where
+  Cast (Union (l::r)) (Either l (Union r)) where
     cast (MemberHere x) = Left x
-    cast (MemberThere (MemberHere x)) = Right x
-    cast (MemberThere (MemberThere x)) = absurd x
+    cast (MemberThere x) = Right x
 
-  Cast (Either l r) (Union [l, r]) where
+  Cast (Either l (Union r)) (Union (l::r)) where
     cast (Left x) = (MemberHere x)
-    cast (Right x) = (MemberThere (MemberHere x))
+    cast (Right x) = (MemberThere x)
 
   ||| A union of two types is isomorphic to Either
-  eitherUnion : Iso (Union [l, r]) (Either l r)
+  eitherUnion : Iso (Union (l::r)) (Either l (Union r))
   eitherUnion = MkIso cast cast from to
     where
       from (Left _) = Refl
       from (Right _) = Refl
       to (MemberHere _) = Refl
-      to (MemberThere (MemberHere _)) = Refl
-      to (MemberThere (MemberThere x)) = absurd x
+      to (MemberThere _) = Refl
 
 
   ||| Remove a type from the union, returns either the contained value or the retracted union.
