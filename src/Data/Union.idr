@@ -1,6 +1,6 @@
-||| UnionType is an alternative to sum type, which gives an easier access to the sum content
+||| Union is an alternative to sum type, which gives an easier access to the sum content
 ||| and that can be extended dynamically, whithout compromising type safety.
-module Data.UnionType
+module Data.Union
 
 import Control.Isomorphism
 import public Data.List
@@ -415,4 +415,12 @@ namespace union1
              = case (decEq xs ys) of
                     Yes Refl => Yes Refl
                     No contra => No $ recDecEqUnion contra
+
+  Functor (Union []) where
+    map func x = absurd x
+
+  export
+  (Functor f, Functor (Union xs)) => Functor (Union (f::xs)) where
+    map func (MemberHere x) = MemberHere $ map func x
+    map func (MemberThere x) = MemberThere $ map func x
 
