@@ -1,6 +1,6 @@
 module Main
 
-import Data.UnionType
+import Data.Union
 import Data.Vect
 
 record Whiskey where
