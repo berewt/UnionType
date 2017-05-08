@@ -6,19 +6,8 @@ import public Data.List
 %default total
 %access public export
 
-data FuncUnion = MkFuncUnion (List (Type -> Type))
-
-inter : FuncUnion -> Type -> Type
-inter (MkFuncUnion xs) = Union xs
-
-wrapUnion : List (Type -> Type) -> Type -> Type
-wrapUnion = inter . MkFuncUnion
-
-data Fix' : (f : FuncUnion) -> Type where
-  In : inter f (Fix' f) -> Fix' f
-
-Fix : List (Type -> Type) -> Type
-Fix = Fix' . MkFuncUnion
+data Fix : (f : (List (Type -> Type))) -> Type where
+  In : Union f (Fix f) -> Fix f
 
 Algebra : (f : Type -> Type) -> (a: Type) -> Type
 Algebra f a = f a -> a
@@ -33,5 +22,5 @@ FAlgebra name (Union []) a where
   algebra n (MemberHere x) = algebra n x
   algebra n (MemberThere x) = algebra n x
 
-foldAlgebra : Functor (inter $ MkFuncUnion f) => Algebra (inter $ MkFuncUnion f) a -> Fix f -> a
+foldAlgebra : Functor (Union f) => Algebra (Union f) a -> Fix f -> a
 foldAlgebra alg l@(In x) = alg $ map (\y => foldAlgebra alg $ assert_smaller l y) x

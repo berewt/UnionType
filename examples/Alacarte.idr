@@ -40,9 +40,9 @@ addExample = add (val 10) (add (val 12) (val 20))
 data Eval = MkEval
 
 -- and we define a small helper to ease the computation of this specific algebra
-eval : ( Functor (wrapUnion fs)
+eval : ( Functor (Union fs)
        , Num a
-       , FAlgebra Eval (wrapUnion fs) a
+       , FAlgebra Eval (Union fs) a
        )
     => Fix fs -> a
 eval = foldAlgebra (algebra MkEval)
@@ -98,8 +98,8 @@ addMultExample = mult (add (val 3) (val 4)) (val 6)
 
 data Display = MkDisplay
 
-display : ( Functor (wrapUnion fs)
-          , FAlgebra Display (wrapUnion fs) String
+display : ( Functor (Union fs)
+          , FAlgebra Display (Union fs) String
           )
        => Fix fs -> String
 display = foldAlgebra (algebra MkDisplay)
