@@ -45,7 +45,7 @@ eval : ( Functor (Union fs)
        , FAlgebra Eval (Union fs) a
        )
     => Fix fs -> a
-eval = foldAlgebra (algebra MkEval)
+eval = foldFix (algebra MkEval)
 
 -- then for each type we want to be able to include to our algebra, we define
 -- a typeclass instance
@@ -102,7 +102,7 @@ display : ( Functor (Union fs)
           , FAlgebra Display (Union fs) String
           )
        => Fix fs -> String
-display = foldAlgebra (algebra MkDisplay)
+display = foldFix (algebra MkDisplay)
 
 
 Show a => FAlgebra Display (ValType a) String where
@@ -114,3 +114,57 @@ FAlgebra Display AddType String where
 FAlgebra Display MultType String where
   algebra _ (Mult x y) = unwords ["(", x, ")", "x", "(", y, ")"]
 
+
+
+-- An example with Term (from DataTypes à la carte)
+
+data Incr t = MkIncr Int t
+
+incr : Int -> {auto p : Elem Incr xs} -> Term xs ()
+incr x = Impure $ member $ MkIncr x (Pure ())
+
+Functor Incr where
+  map func (MkIncr x y) = MkIncr x $ func y
+
+data Recall t = MkRecall (Int -> t)
+
+recall : {auto p : Elem Recall xs} -> Term xs Int
+recall = Impure $ member $ MkRecall Pure
+
+Functor Recall where
+  map func (MkRecall f) = MkRecall $ func . f
+
+
+data Mem = MkMem Int
+
+interface Functor f => Run (f : Type -> Type) where
+  runAlgebra : f (Mem -> (a, Mem)) -> Mem -> (a, Mem)
+
+Run Incr where
+    runAlgebra (MkIncr k r) (MkMem i) = r $ MkMem (i + k)
+
+Run Recall where
+    runAlgebra (MkRecall r) (MkMem i) = r i $ MkMem i
+
+Run (Union []) where
+    runAlgebra (MemberHere _) _ impossible
+    runAlgebra (MemberThere _) _ impossible
+
+(Run f, Run (Union fs)) => Run (Union (f::fs)) where
+     runAlgebra (MemberHere r) = runAlgebra r
+     runAlgebra (MemberThere r) = runAlgebra r
+
+run : Run (Union fs) => Term fs a -> Mem -> (a, Mem)
+run = foldTerm MkPair runAlgebra
+
+
+-- An example of a term, can be tested
+-- 
+-- Idris> :l examples/Alacarte.idr
+-- Type checking ./examples/Alacarte.idr
+-- *examples/Alacarte> run tick (MkMem 4)
+-- (4, MkMem 5) : (Int, Mem)
+tick : Term [Recall, Incr] Int
+tick = do y <- recall
+          incr 1
+          pure y
