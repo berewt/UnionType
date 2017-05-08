@@ -2,6 +2,7 @@ module Main
 
 import Data.Union
 import Data.Union.Fix
+import Data.Union.Term
 
 -- Let's starts with a small language to add some values.
 
@@ -159,7 +160,7 @@ run = foldTerm MkPair runAlgebra
 
 
 -- An example of a term, can be tested
--- 
+--
 -- Idris> :l examples/Alacarte.idr
 -- Type checking ./examples/Alacarte.idr
 -- *examples/Alacarte> run tick (MkMem 4)
