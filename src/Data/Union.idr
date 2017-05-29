@@ -422,3 +422,14 @@ namespace union1
     map func (MemberHere x) = MemberHere $ map func x
     map func (MemberThere x) = MemberThere $ map func x
 
+  Foldable (Union []) where
+    foldr _ _ input = absurd input
+    foldl _ _ input = absurd input
+
+  export
+  (Foldable f, Foldable (Union xs)) => Foldable (Union (f::xs)) where
+     foldr func init (MemberHere x) = foldr func init x
+     foldr func init (MemberThere x) = foldr func init x
+
+     foldl func init (MemberHere x) = foldl func init x
+     foldl func init (MemberThere x) = foldl func init x

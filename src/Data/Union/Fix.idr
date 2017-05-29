@@ -30,5 +30,20 @@ data Fix : (f : (List (Type -> Type))) -> Type where
   In : Union f (Fix f) -> Fix f
 
 ||| Recursively apply an algebra on a Fix element
+cata : Functor (Union f) => Algebra (Union f) a -> Fix f -> a
+cata alg l@(In x) = alg $ map (\y => cata alg $ assert_smaller l y) x
+
+
+||| A sysnonym for cata
 foldFix : Functor (Union f) => Algebra (Union f) a -> Fix f -> a
-foldFix alg l@(In x) = alg $ map (\y => foldFix alg $ assert_smaller l y) x
+foldFix = cata
+
+
+||| Transform a Fix in a bottom-up manner
+trans : Functor (Union f) => (Fix f -> Fix f) -> Fix f -> Fix f
+trans func = cata (func . In)
+
+||| Query a Fix
+query : Foldable (Union f) => (Fix f -> r) -> (r -> r -> r) -> Fix f -> r
+query q func l@(In x)
+  = foldl (\r,y => func r $ query q func $ assert_smaller l y) (q l) x
