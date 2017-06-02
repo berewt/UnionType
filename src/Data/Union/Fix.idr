@@ -1,6 +1,6 @@
 module Data.Union.Fix
 
-import Data.Union
+import Data.Union.Internal.Union1
 import public Data.List
 
 %default total

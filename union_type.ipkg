@@ -12,4 +12,12 @@ bugtracker = https://github.com/berewt/UnionType/issues
 
 sourcedir = src
 
-modules = Data.Union, Data.Union.Fix, Data.Union.Term
+modules = Data.Union
+        , Data.Union.Fix
+        , Data.Union.HFunctor
+        , Data.Union.Internal.Sub
+        , Data.Union.Internal.Union
+        , Data.Union.Internal.Union1
+        , Data.Union.Internal.Union2
+        , Data.Union.Term
+        , Data.Union.TypedFix

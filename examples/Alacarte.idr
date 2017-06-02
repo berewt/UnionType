@@ -11,7 +11,7 @@ import Data.Union.Term
 data ValType a b = Val a
 
 -- and to be able to promote them into Fix
-val : Num a => a -> {auto p : Elem (ValType a) xs } -> Fix xs
+val : a -> {auto p : Elem (ValType a) xs } -> Fix xs
 val x = In $ member (Val x)
 
 -- nad of course, to be able to build a la carte stuff, we need a functor
@@ -28,9 +28,12 @@ add x y = In $ member (Add x y)
 Functor AddType where
   map func (Add x y) =  Add (func x) (func y)
 
--- and we can already define some expressions as this one
+-- and we can already define some expressions, as this one
 addExample : Num a => Fix [ValType a, AddType]
 addExample = add (val 10) (add (val 12) (val 20))
+
+
+
 
 
 
@@ -46,7 +49,7 @@ eval : ( Functor (Union fs)
        , FAlgebra Eval (Union fs) a
        )
     => Fix fs -> a
-eval = foldFix (algebra MkEval)
+eval = cata (algebra MkEval)
 
 -- then for each type we want to be able to include to our algebra, we define
 -- a typeclass instance
