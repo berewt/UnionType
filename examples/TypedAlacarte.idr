@@ -78,5 +78,5 @@ HAlgebra Eval IteType (Fix [ValType]) where
 test21 : Bool -> Nat
 test21 = eval . example2
 
-test22 : Bool -> Nat
+test22 : Bool -> Int
 test22 = eval . example2
