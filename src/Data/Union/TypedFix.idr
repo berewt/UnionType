@@ -27,7 +27,6 @@ HAlgebra name (Union []) e where
   algebra name (MemberThere x) = algebra name x
 
 ||| The fix point like for Union
-<<<<<<< HEAD
 -- data Fix : (f : List ((Type -> Type) -> Type -> Type)) -> Type -> Type where
 --  In : Union f (Fix f) w -> Fix f w
 record Fix (f : List ((Type -> Type) -> Type -> Type)) w where
@@ -35,18 +34,12 @@ record Fix (f : List ((Type -> Type) -> Type -> Type)) w where
   outFix : Union f (Fix f) w
 
 ||| Lift a value into a Fix
-=======
-data Fix : (f : List ((Type -> Type) -> Type -> Type)) -> Type -> Type where
-  In : Union f (Fix f) w -> Fix f w
-
->>>>>>> f7d54c60822ec1799939d22f3ff91f1e40c20c74
 lift : f (Fix fs) w -> {auto prf : Elem f fs} -> Fix fs w
 lift x = In $ member x
 
 ||| Recursively apply an algebra on a Fix element
 cata : HFunctor (Union fs) => (alg : Algebra (Union fs) e) -> Fix fs w -> e w
 cata alg l@(In x) = alg $ hmap (\y => cata alg $ assert_smaller l y) x
-<<<<<<< HEAD
 
 ||| A sysnonym for cata
 foldFix : HFunctor (Union fs) => (alg : Algebra (Union fs) e) -> Fix fs w -> e w
@@ -61,5 +54,3 @@ trans func = cata (func . In)
 mapFix : (HFunctor (Union fs), HFunctor (Union gs))
       => ({e : _} -> Algebra (Union fs) (Union gs e)) -> Fix fs w -> Fix gs w
 mapFix alg = cata (In . alg . hmap outFix)
-=======
->>>>>>> f7d54c60822ec1799939d22f3ff91f1e40c20c74
