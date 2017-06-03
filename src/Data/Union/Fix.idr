@@ -26,8 +26,14 @@ FAlgebra name (Union []) a where
 
 
 ||| The fix point like for Union
-data Fix : (f : (List (Type -> Type))) -> Type where
-  In : Union f (Fix f) -> Fix f
+record Fix (f : (List (Type -> Type))) where
+  constructor In
+  outFix : Union f (Fix f)
+
+||| Lift a value into a Fix
+lift : f (Fix fs) -> {auto prf : Elem f fs} -> Fix fs
+lift x = In $ member x
+
 
 ||| Recursively apply an algebra on a Fix element
 cata : Functor (Union f) => Algebra (Union f) a -> Fix f -> a
@@ -47,3 +53,8 @@ trans func = cata (func . In)
 query : Foldable (Union f) => (Fix f -> r) -> (r -> r -> r) -> Fix f -> r
 query q func l@(In x)
   = foldl (\r,y => func r $ query q func $ assert_smaller l y) (q l) x
+
+||| Modify the sum type of a fix
+mapFix : (Functor (Union fs), Functor (Union gs))
+      => ({a : _} -> Algebra (Union fs) (Union gs a)) -> Fix fs -> Fix gs
+mapFix alg = cata (In . alg . map outFix)

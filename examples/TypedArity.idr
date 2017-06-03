@@ -139,3 +139,5 @@ test4 = swap $ pair (first (val ("foo", 4))) $ first (val (2, 'c'))
 
 test5 : Fix [Val, Binary Arithmetic] Nat
 test5 = add (val 10) (mult (val 3) (val 8))
+
+
