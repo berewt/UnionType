@@ -12,6 +12,7 @@ data Sub : List a -> List a -> Type where
   SubZ : Sub [] ys
   SubK : Sub xs ys -> Elem x ys -> Sub (x::xs) ys
 
+<<<<<<< HEAD
 export
 expandSub : Sub xs ys -> Sub xs (y :: ys)
 expandSub SubZ = SubZ

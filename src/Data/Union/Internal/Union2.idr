@@ -126,12 +126,12 @@ namespace union2
   ||| @ u The union to generalize
   ||| @ s A prrof that each type of u is in the result,
   |||     used to map the value of the union.
-  generalize : (u: Union xs a w) -> {auto s: Sub xs ys} -> Union ys a w
+  generalize : {a,w : _} -> (u: Union xs a w) -> {auto s: Sub xs ys} -> Union ys a w
   generalize (MemberHere x) {s = (SubK _ p)} = member x
   generalize (MemberThere x) {s = (SubK s _)} = generalize x
 
   ||| English version of generalize
-  generalise : (u: Union xs a w) -> {auto s: Sub xs ys} -> Union ys a w
+  generalise : {a,w : _} -> (u: Union xs a w) -> {auto s: Sub xs ys} -> Union ys a w
   generalise = generalize
 
   Eq (Union [] a w) where
