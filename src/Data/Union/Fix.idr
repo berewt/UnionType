@@ -56,5 +56,13 @@ query q func l@(In x)
 
 ||| Modify the sum type of a fix
 mapFix : (Functor (Union fs), Functor (Union gs))
-      => ({a : _} -> Algebra (Union fs) (Union gs a)) -> Fix fs -> Fix gs
-mapFix alg = cata (In . alg . map outFix)
+      => ({a : _} -> Union fs a -> Union gs a) -> Fix fs -> Fix gs
+mapFix func = cata (In . map In . func . map outFix)
+
+generalise : (Functor (Union fs), Functor (Union gs))
+          => Fix fs -> {auto prf: Sub fs gs} -> Fix gs
+generalise f = mapFix (\x => generalize x) f
+
+generalize : (Functor (Union fs), Functor (Union gs))
+          => Fix fs -> {auto prf: Sub fs gs} -> Fix gs
+generalize = generalise
