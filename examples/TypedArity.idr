@@ -139,3 +139,32 @@ test4 = swap $ pair (first (val ("foo", 4))) $ first (val (2, 'c'))
 
 test5 : Fix [Val, Binary Arithmetic] Nat
 test5 = add (val 10) (mult (val 3) (val 8))
+
+test5' : Fix (Val::Binary Arithmetic::ts) Nat
+test5' = add (val 10) (mult (val 3) (val 8))
+
+test6'' : (LocateType Val ts, LocateType (Binary Arithmetic) ts) => Fix ts Nat
+test6'' = add (val 10) (mult (val 3) (val 8))
+
+test6''' : Fix [Val, Binary Arithmetic] Nat
+test6''' = test6''
+
+
+
+
+
+
+
+
+
+data Reduce = MkReduce
+
+reduce : (HFunctor (Union fs)
+       , HAlgebra Eval (Union fs) (Fix [Val])
+       ) => {w : _ } -> Fix fs w -> w
+reduce {fs} {w} = extract . cata (algebra MkEval)
+
+
+(LocateType Val ts, LocateType (Binary Arithmetic) ts) => HAlgebra Reduce (Unary Negate) (Fix ts) where
+  algebra _ (MkUnary MkNegate x) = val (-1) `mult` x
+

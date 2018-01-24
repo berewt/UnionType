@@ -35,6 +35,11 @@ namespace union2
       uninhabited (MemberHere _) impossible
       uninhabited (MemberThere _) impossible
 
+  public export
+  interface LocateType (t : (Type -> Type) -> Type -> Type) (ts : List ((Type -> Type) -> Type -> Type)) where
+    %hint
+    witness : Elem t ts
+
   ||| Create an Union instance from one of the Union value.
   ||| In presence of type ambiguity
   member : (x : f a w) -> {auto p: Elem f ts} -> Union ts a w
