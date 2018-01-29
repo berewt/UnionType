@@ -52,5 +52,13 @@ trans func = cata (func . In)
 
 ||| Modify the sum type of a fix
 mapFix : (HFunctor (Union fs), HFunctor (Union gs))
-      => ({e : _} -> Algebra (Union fs) (Union gs e)) -> Fix fs w -> Fix gs w
-mapFix alg = cata (In . alg . hmap outFix)
+      => ({e,w : _} -> Union fs e w -> Union gs e w) -> Fix fs w -> Fix gs w
+mapFix func = cata (In . hmap In . func . hmap outFix)
+
+generalise : (HFunctor (Union fs), HFunctor (Union gs))
+          => Fix fs w -> {auto prf: Sub fs gs} -> Fix gs w
+generalise f = mapFix (\x => generalize x) f
+
+generalize : (HFunctor (Union fs), HFunctor (Union gs))
+          => Fix fs w -> {auto prf: Sub fs gs} -> Fix gs w
+generalize = generalise

@@ -11,6 +11,9 @@ data Term : (f : (List (Type -> Type))) -> Type -> Type where
   Pure : a -> Term f a
   Impure : Union f (Term f a) -> Term f a
 
+lift : f (Term fs a) -> {auto prf : Elem f fs} -> Term fs a
+lift x = Impure $ member x
+
 Functor (Union f) => Functor (Term f) where
     map func (Pure x) = Pure $ func x
     map func t@(Impure x) = Impure $ map (\y => map func $ assert_smaller t y) x

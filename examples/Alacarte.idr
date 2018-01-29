@@ -12,7 +12,7 @@ data ValType a b = Val a
 
 -- and to be able to promote them into Fix
 val : a -> {auto p : Elem (ValType a) xs } -> Fix xs
-val x = In $ member (Val x)
+val x = lift $ Val x
 
 -- nad of course, to be able to build a la carte stuff, we need a functor
 Functor (ValType a) where
@@ -23,7 +23,7 @@ Functor (ValType a) where
 data AddType a = Add a a
 
 add : Fix xs -> Fix xs -> {auto p : Elem AddType xs} -> Fix xs
-add x y = In $ member (Add x y)
+add x y = lift $ Add x y
 
 Functor AddType where
   map func (Add x y) =  Add (func x) (func y)
@@ -75,7 +75,7 @@ Num a => FAlgebra Eval AddType a where
 data MultType a = Mult a a
 
 mult : Fix xs -> Fix xs -> {auto p : Elem MultType xs} -> Fix xs
-mult x y = In $ member (Mult x y)
+mult x y = lift $ Mult x y
 
 Functor MultType where
   map func (Mult x y) =  Mult (func x) (func y)
@@ -125,7 +125,7 @@ FAlgebra Display MultType String where
 data Incr t = MkIncr Int t
 
 incr : Int -> {auto p : Elem Incr xs} -> Term xs ()
-incr x = Impure $ member $ MkIncr x (Pure ())
+incr x = lift $ MkIncr x (Pure ())
 
 Functor Incr where
   map func (MkIncr x y) = MkIncr x $ func y
@@ -133,7 +133,7 @@ Functor Incr where
 data Recall t = MkRecall (Int -> t)
 
 recall : {auto p : Elem Recall xs} -> Term xs Int
-recall = Impure $ member $ MkRecall Pure
+recall = lift $ MkRecall Pure
 
 Functor Recall where
   map func (MkRecall f) = MkRecall $ func . f
