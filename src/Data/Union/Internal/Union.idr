@@ -26,6 +26,7 @@ namespace union
     ||| @ xs The rest of the union
     MemberThere : (x : Union xs) -> Union (ty :: xs)
 
+  public export
   Uninhabited (Union []) where
       uninhabited (MemberHere _) impossible
       uninhabited (MemberThere _) impossible
@@ -75,6 +76,7 @@ namespace union
 
   ||| Fold a whole union to compute a given type
   ||| @ fs gathers the function that should be apply in each case of the union
+  public export
   foldUnion : (fs: UnionFold a xs) -> Union xs -> a
   foldUnion [] x = absurd x
   foldUnion (f :: _) (MemberHere y) = f y
