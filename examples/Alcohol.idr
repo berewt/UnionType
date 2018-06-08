@@ -60,5 +60,5 @@ moreAlcohol x = generalize x -- eta reduction does not work
 eitherAlcohol : Alcohol -> Either Whiskey Beer
 eitherAlcohol = cast
 
-backToAlcohol : MoreAlcohol -> Either Alcohol Sake 
+backToAlcohol : MoreAlcohol -> Either Alcohol Sake
 backToAlcohol x = retract x -- eta reduction does not work

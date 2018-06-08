@@ -35,6 +35,13 @@ Alcohol : Type
 Alcohol = Union [Whiskey, Beer]
 ```
 
+And then:
+
+```
+myAlcohol : Alcohol
+myAlcohol = member $ MkBeer "Lupulus"
+```
+
 And comes with some helpers like the `get` function that try to extract value
 of a given type:
 
