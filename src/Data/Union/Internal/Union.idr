@@ -5,7 +5,7 @@ module Data.Union.Internal.Union
 import Control.Isomorphism
 import public Data.List
 
-import public Data.Union.Internal.Sub
+import public Data.Sub
 
 %default total
 %access export
@@ -198,11 +198,15 @@ namespace union
   ||| the mapping between source and target types is ensures by the implicit
   ||| Sub parameter.
   ||| @ u The union to generalize
-  ||| @ s A prrof that each type of u is in the result,
+  ||| @ sub A proof that each type of u is in the result,
   |||     used to map the value of the union.
-  generalize : (u: Union xs) -> {auto s: Sub xs ys} -> Union ys
-  generalize (MemberHere x) {s = (SubK _ p)} = member x
-  generalize (MemberThere x) {s = (SubK s _)} = generalize x
+  generalize : (u: Union xs) -> {auto sub: Sub xs ys} -> Union ys
+  generalize (MemberHere x) {sub = (e :: es)} = decideLoc x e
+    where
+      decideLoc : (x : a) -> Elem a ys -> Union ys
+      decideLoc x Here = MemberHere x
+      decideLoc x (There later) = MemberThere (decideLoc x later)
+  generalize (MemberThere x) {sub = (e :: es)} = generalize x
 
   ||| English version of generalize
   generalise : (u: Union xs) -> {auto s: Sub xs ys} -> Union ys

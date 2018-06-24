@@ -10,12 +10,13 @@ maintainer = Nicolas Biri <nicolas@biri.name>
 sourceloc = https://github.com/berewt/UnionType
 bugtracker = https://github.com/berewt/UnionType/issues
 
+pkgs = sublist -- https://github.com/berewt/sublist
+
 sourcedir = src
 
 modules = Data.Union
         , Data.Union.Fix
         , Data.Union.HFunctor
-        , Data.Union.Internal.Sub
         , Data.Union.Internal.Union
         , Data.Union.Internal.Union1
         , Data.Union.Internal.Union2
