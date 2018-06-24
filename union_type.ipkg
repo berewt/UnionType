@@ -2,7 +2,7 @@ package union_type
 
 brief = "Build extensible type union of type without introducing specific constructor"
 readme = Readme.md
-version = 0.5.0
+version = 0.5.1
 
 author = Nicolas Biri <nicolas@biri.name>
 maintainer = Nicolas Biri <nicolas@biri.name>
