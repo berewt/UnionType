@@ -6,7 +6,6 @@ import Control.Isomorphism
 import public Data.List
 
 import public Data.Union.HFunctor
-import public Data.Union.Internal.Sub
 import public Data.Union.Internal.Union
 import public Data.Union.Internal.Union1
 import public Data.Union.Internal.Union2
